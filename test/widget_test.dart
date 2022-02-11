@@ -14,6 +14,6 @@ Future<void> main() async {
     test('test', () async {
       final dbSer = DerpibooruService();
       final response = await dbSer.getGalleryJson();
-      print(response);
+      print(dbSer.getImagesUrl(response));
     });
 }
