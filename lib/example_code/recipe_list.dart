@@ -43,7 +43,6 @@ class _RecipeListState extends State<RecipeList> {
       ..addListener(() {
         final triggerFetchMoreSize =
             0.7 * _scrollController.position.maxScrollExtent;
-
         if (_scrollController.position.pixels > triggerFetchMoreSize) {
           if (hasMore &&
               currentEndPosition < currentCount &&
