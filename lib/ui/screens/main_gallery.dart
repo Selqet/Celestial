@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:celestial/network/derpibooru_service.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +14,8 @@ class _MainGalleryState extends State<MainGallery> {
   final derpiService = DerpibooruService();
   int currentPage = 1;
   int currentCount = 0;
-  List<APIImage> currentDisplayImages = [];
+  bool loading = false;
+  List<Image> currentDisplayImages = [];
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -20,10 +23,14 @@ class _MainGalleryState extends State<MainGallery> {
     super.initState();
     _scrollController.addListener(() {
       final triggerFetchMoreSize =
-          0.7 * _scrollController.position.maxScrollExtent;
+          0.5 * _scrollController.position.maxScrollExtent;
 
       if (_scrollController.position.pixels > triggerFetchMoreSize) {
-        setState(() {});
+        if (!loading) {
+          setState(() {
+            loading = true;
+          });
+        }
       }
     });
   }
@@ -48,8 +55,8 @@ class _MainGalleryState extends State<MainGallery> {
   }
 
   Widget _buildImageGallery(BuildContext context) {
-    return FutureBuilder<APISearchImages>(
-      future: derpiService.getSearchImages(page: currentPage),
+    return FutureBuilder<List<Image>>(
+      future: derpiService.getListOfImages(page: currentPage),
       builder: (context, snapshot) {
         //TODO Add error handling
         if (snapshot.connectionState == ConnectionState.done) {
@@ -59,10 +66,11 @@ class _MainGalleryState extends State<MainGallery> {
                   textAlign: TextAlign.center, textScaleFactor: 1.3),
             );
           }
+          loading = false;
           final data = snapshot.data;
           if (data != null) {
-            currentDisplayImages.addAll(data.images);
-            currentCount += data.images.length;
+            currentDisplayImages.addAll(data);
+            currentCount += data.length;
             currentPage++;
           }
           return _buildGalleryGrid(context);
@@ -77,12 +85,12 @@ class _MainGalleryState extends State<MainGallery> {
     return GridView.builder(
       controller: _scrollController,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+        crossAxisCount: 2,
       ),
       itemBuilder: (BuildContext context, int index) {
-        return Image.network(
-            currentDisplayImages[index].representations['small']);
+        return currentDisplayImages[index];
       },
+      //padding: const EdgeInsets.only(right: 10.0, bottom: 10.0),
       itemCount: currentCount,
     );
   }

@@ -1,6 +1,9 @@
 import 'dart:convert';
-
+import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
+//TODO !!!Add interface
 
 class DerpibooruService {
   //TODO Add filters to a Map?
@@ -14,7 +17,7 @@ class DerpibooruService {
   //TODO Add filter_id handling
   //TODO Ask Витя if I should return json instead of Map, because I don't see any difference and if it should return json in general
   Future<APISearchImages> getSearchImages(
-      {tags = 'fluttershy,safe,solo',
+      {tags = 'fluttershy,safe,solo,-animated',
       String sortDirection = 'desc',
       String sortField = 'score',
       int page = 1}) async {
@@ -28,6 +31,23 @@ class DerpibooruService {
       throw Exception('${response.statusCode} ${response.headers} ${response.reasonPhrase}');
     }
   }
+
+  //TODO Refactor this garbage
+  Future<List<Image>> getListOfImages(
+      {String tags = 'fluttershy,safe,solo',
+        String sortDirection = 'desc',
+        String sortField = 'score',
+        int page = 1,
+        String size = 'small'}) async {
+    List<Image> ListOfImages = [];
+
+    var searchImages = await getSearchImages(page: page);
+      for (int i = 0; i < 50; i++) {
+        ListOfImages.add(Image.network(searchImages.images[i].representations['$size']));
+      }
+      return ListOfImages;
+    }
+
 
 }
 
