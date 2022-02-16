@@ -24,7 +24,8 @@ class DerpibooruService {
     if (response.statusCode == 200) {
       return APISearchImages.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Failed to get derpibooru response');
+      //TODO Delete
+      throw Exception('${response.statusCode} ${response.headers} ${response.reasonPhrase}');
     }
   }
 
@@ -52,13 +53,14 @@ class APISearchImages {
 
 class APIImage {
   //TODO Maybe add final
+  //TODO !!! Use nullability
   Map<String, dynamic> representations;
   List<dynamic> tags;
   int id;
   int width;
   int height;
   double aspectRatio;
-  String sourceUrl;
+  String? sourceUrl;
   bool animated;
   bool spoilered;
 

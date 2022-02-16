@@ -13,7 +13,10 @@ import 'package:celestial/main.dart';
 Future<void> main() async {
     test('test', () async {
       final dbSer = DerpibooruService();
-      var pictureList = await dbSer.getImagesList();
-      print(pictureList[0].runtimeType);
+      for (int i = 1; i < 10; i++) {
+        await Future.delayed(Duration(seconds: 5));
+        var a = await dbSer.getSearchImages(page: i);
+        print(a.images.length);
+      }
     });
 }

@@ -53,30 +53,37 @@ class _MainGalleryState extends State<MainGallery> {
       builder: (context, snapshot) {
         //TODO Add error handling
         if (snapshot.connectionState == ConnectionState.done) {
-          currentDisplayImages.addAll(snapshot.data!.images);
-          currentCount += snapshot.data!.images.length;
-          currentPage++;
-          //TODO Locate to custom widget
-          //TODO Add list size handling
-          return GridView.builder(
-            controller: _scrollController,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-            ),
-            itemBuilder: (BuildContext context, int index) {
-              return Image.network(
-                  currentDisplayImages[index].representations['small']);
-            },
-            itemCount: currentCount,
-          );
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(snapshot.error.toString(),
+                  textAlign: TextAlign.center, textScaleFactor: 1.3),
+            );
+          }
+          final data = snapshot.data;
+          if (data != null) {
+            currentDisplayImages.addAll(data.images);
+            currentCount += data.images.length;
+            currentPage++;
+          }
+          return _buildGalleryGrid(context);
         } else {
-          //TODO Return GridView
-          return Opacity(
-            opacity: 0.45,
-            child: CircularProgressIndicator(),
-          );
+          return _buildGalleryGrid(context);
         }
       },
+    );
+  }
+
+  Widget _buildGalleryGrid(BuildContext context) {
+    return GridView.builder(
+      controller: _scrollController,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+      ),
+      itemBuilder: (BuildContext context, int index) {
+        return Image.network(
+            currentDisplayImages[index].representations['small']);
+      },
+      itemCount: currentCount,
     );
   }
 }
