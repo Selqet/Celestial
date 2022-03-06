@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../entities/gallery_entities.dart';
+
 //TODO !!!Add interface
 
 class DerpibooruService {
@@ -14,15 +16,16 @@ class DerpibooruService {
   static const filterR34 = 37432;
   static const filterDark = 37429;
 
-  //TODO Add filter_id handling
   //TODO Ask Витя if I should return json instead of Map, because I don't see any difference and if it should return json in general
   Future<APISearchImages> getSearchImages(
       {tags = 'fluttershy,safe,solo,-animated',
       String sortDirection = 'desc',
       String sortField = 'score',
       int page = 1}) async {
+    // !!! Url is a bit hard-coded
+    //TODO Add WebM support
     var url =
-        'https://derpibooru.org//api/v1/json/search/images?q=$tags&sd=$sortDirection&sf=$sortField&page=$page&per_page=50';
+        'https://derpibooru.org//api/v1/json/search/images?q=$tags,-webm&sd=$sortDirection&sf=$sortField&filter_id=$filterEverything&page=$page&per_page=50';
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       return APISearchImages.fromJson(jsonDecode(response.body));
@@ -33,22 +36,28 @@ class DerpibooruService {
   }
 
   //TODO Refactor this garbage
-  Future<List<Image>> getListOfImages(
+  Future<List<GalleryPictureInfo>> getListOfImages(
       {String tags = 'fluttershy,safe,solo',
         String sortDirection = 'desc',
         String sortField = 'score',
         int page = 1,
         String size = 'small'}) async {
-    List<Image> ListOfImages = [];
 
-    var searchImages = await getSearchImages(page: page);
-      for (int i = 0; i < 50; i++) {
-        ListOfImages.add(Image.network(searchImages.images[i].representations['$size']));
+    List<GalleryPictureInfo> ListOfImages = [];
+
+    var searchImages = await getSearchImages(
+      tags: tags,
+        page: page);
+      for (int i = 0; i < searchImages.images.length; i++) {
+        Image picture = Image.network(searchImages.images[i].representations['$size']);
+        List<String> tags = [];
+        searchImages.images[i].tags.forEach((element) {
+          tags.add(element.toString());
+        });
+        ListOfImages.add(GalleryPictureInfo(smallPic: picture, tags: tags));
       }
       return ListOfImages;
     }
-
-
 }
 
 class APISearchImages {

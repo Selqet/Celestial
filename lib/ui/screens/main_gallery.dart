@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:celestial/network/derpibooru_service.dart';
 import 'package:flutter/material.dart';
+import '../../entities/gallery_entities.dart';
 
 class MainGallery extends StatefulWidget {
   const MainGallery({Key? key}) : super(key: key);
@@ -12,11 +13,14 @@ class MainGallery extends StatefulWidget {
 
 class _MainGalleryState extends State<MainGallery> {
   final derpiService = DerpibooruService();
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchTextController =
+      TextEditingController(text: '');
   int currentPage = 1;
   int currentCount = 0;
   bool loading = false;
-  List<Image> currentDisplayImages = [];
-  final ScrollController _scrollController = ScrollController();
+  List<GalleryPictureInfo> currentDisplayImages = [];
+  String currentSearchText = 'fluttershy,safe,solo,-animated';
 
   @override
   void initState() {
@@ -41,10 +45,23 @@ class _MainGalleryState extends State<MainGallery> {
       appBar: AppBar(
         title: Row(
           children: [
-            Icon(Icons.search),
+            const Icon(Icons.search),
+            const SizedBox(
+              width: 10.0,
+            ),
             Expanded(
               child: TextField(
-                decoration: InputDecoration(hintText: 'Please enter some text'),
+                controller: _searchTextController,
+                decoration:
+                    const InputDecoration(hintText: 'Please enter some text'),
+                onSubmitted: (String text) {
+                  setState(() {
+                    currentPage = 1;
+                    currentCount = 0;
+                    currentDisplayImages.clear();
+                    currentSearchText = text;
+                  });
+                },
               ),
             )
           ],
@@ -55,8 +72,9 @@ class _MainGalleryState extends State<MainGallery> {
   }
 
   Widget _buildImageGallery(BuildContext context) {
-    return FutureBuilder<List<Image>>(
-      future: derpiService.getListOfImages(page: currentPage),
+    return FutureBuilder<List<GalleryPictureInfo>>(
+      future: derpiService.getListOfImages(
+          tags: currentSearchText, page: currentPage),
       builder: (context, snapshot) {
         //TODO Add error handling
         if (snapshot.connectionState == ConnectionState.done) {
@@ -88,10 +106,21 @@ class _MainGalleryState extends State<MainGallery> {
         crossAxisCount: 2,
       ),
       itemBuilder: (BuildContext context, int index) {
-        return currentDisplayImages[index];
+        return _galleryPicture(context, index);
       },
       //padding: const EdgeInsets.only(right: 10.0, bottom: 10.0),
       itemCount: currentCount,
+    );
+  }
+
+  Widget _galleryPicture(BuildContext context, int index) {
+    return Card(
+      //TODO Try shape:
+      child: FittedBox(
+        child: currentDisplayImages[index].smallPic,
+        fit: BoxFit.cover,
+        clipBehavior: Clip.hardEdge,
+      ),
     );
   }
 }
