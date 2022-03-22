@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
+import 'network_interface.dart';
 import '../entities/gallery_entities.dart';
 
-//TODO !!!Add interface
+//TODO Ask Vitya if I should Image.network() out of a class
 
-class DerpibooruService {
+class DerpibooruService implements NetworkInterface{
   //TODO Add filters to a Map?
   static const filterDefaultSafe = 100073;
   static const filterDefaultSpoilered = 37430;
@@ -36,6 +36,7 @@ class DerpibooruService {
   }
 
   //TODO Refactor this garbage
+  @override
   Future<List<GalleryPictureInfo>> getListOfImages(
       {String tags = 'fluttershy,safe,solo',
         String sortDirection = 'desc',
@@ -50,11 +51,22 @@ class DerpibooruService {
         page: page);
       for (int i = 0; i < searchImages.images.length; i++) {
         Image picture = Image.network(searchImages.images[i].representations['$size']);
+
         List<String> tags = [];
         searchImages.images[i].tags.forEach((element) {
           tags.add(element.toString());
         });
-        ListOfImages.add(GalleryPictureInfo(smallPic: picture, tags: tags));
+
+        Map<String,String?> imageRepresentations = {};
+        searchImages.images[i].representations.forEach((key, value) {
+          imageRepresentations[key] = value?.toString();
+        });
+
+        ListOfImages.add(GalleryPictureInfo(
+            smallPic: picture,
+            tags: tags,
+            representations: imageRepresentations
+        ));
       }
       return ListOfImages;
     }
