@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
-class GalleryPictureInfo {
+class Picture {
   String? artist;
   Image smallPic;
   Image? largePic;
   List<String> tags;
-  Map<String, String?> representations;
+  //TODO Use enums for resolutions 'cause it can differ with different API
+  Map<String, String?> imageUris;
 
-  GalleryPictureInfo(
+  Picture(
       {required this.smallPic,
       required this.tags,
-      required this.representations});
+      required this.imageUris});
 }
