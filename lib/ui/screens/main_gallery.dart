@@ -1,8 +1,7 @@
-import 'dart:io';
-
-import 'package:celestial/network/derpibooru_service.dart';
+import 'package:celestial/network/network_interface.dart';
 import 'package:flutter/material.dart';
-import '../../entities/gallery_entities.dart';
+import 'package:celestial/entities/gallery_entities.dart';
+import 'package:celestial/ui/screens/picture_screen.dart';
 
 class MainGallery extends StatefulWidget {
   const MainGallery({Key? key}) : super(key: key);
@@ -12,14 +11,15 @@ class MainGallery extends StatefulWidget {
 }
 
 class _MainGalleryState extends State<MainGallery> {
-  final derpiService = DerpibooruService();
+  final derpiService = NetworkInterface();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchTextController =
       TextEditingController(text: '');
+
   int currentPage = 1;
   int currentCount = 0;
   bool loading = false;
-  List<GalleryPictureInfo> currentDisplayImages = [];
+  List<Picture> currentDisplayImages = [];
   String currentSearchText = 'fluttershy,safe,solo,-animated';
 
   @override
@@ -63,7 +63,7 @@ class _MainGalleryState extends State<MainGallery> {
                   });
                 },
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -71,14 +71,17 @@ class _MainGalleryState extends State<MainGallery> {
     );
   }
 
+
   Widget _buildImageGallery(BuildContext context) {
-    return FutureBuilder<List<GalleryPictureInfo>>(
-      future: derpiService.getListOfImages(
+    //TODO Think about creating stream to add pictures to list
+    return FutureBuilder<List<Picture>>(
+      // ignore: argument_type_not_assignable
+      future: derpiService.getListOfPictures(
           tags: currentSearchText, page: currentPage),
       builder: (context, snapshot) {
-        //TODO Add error handling
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasError) {
+            //TODO Add cute error message
             return Center(
               child: Text(snapshot.error.toString(),
                   textAlign: TextAlign.center, textScaleFactor: 1.3),
@@ -108,19 +111,28 @@ class _MainGalleryState extends State<MainGallery> {
       itemBuilder: (BuildContext context, int index) {
         return _galleryPicture(context, index);
       },
-      //padding: const EdgeInsets.only(right: 10.0, bottom: 10.0),
       itemCount: currentCount,
     );
   }
 
   Widget _galleryPicture(BuildContext context, int index) {
-    return Card(
-      //TODO Try shape:
-      child: FittedBox(
-        child: currentDisplayImages[index].smallPic,
-        fit: BoxFit.cover,
-        clipBehavior: Clip.hardEdge,
+    return GestureDetector(
+      child: Card(
+        //TODO Try shape:
+        child: FittedBox(
+          child: currentDisplayImages[index].smallPic,
+          fit: BoxFit.cover,
+          clipBehavior: Clip.hardEdge,
+        ),
       ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  pictureInfo(context, currentDisplayImages[index])),
+        );
+      },
     );
   }
 }
