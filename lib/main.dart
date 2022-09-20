@@ -16,7 +16,6 @@ class MyApp extends StatelessWidget {
           appBarTheme: AppBarTheme(
               backgroundColor: Colors.deepPurple.shade300,
               foregroundColor: Colors.black,
-
           ),
       ),
       home: MainGallery(),

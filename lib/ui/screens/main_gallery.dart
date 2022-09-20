@@ -78,7 +78,7 @@ class _MainGalleryState extends State<MainGallery> {
         bottom: PreferredSize(
           child:
               isSearchSettingToggled ? _searchSettings(context) : Container(),
-          preferredSize: Size.fromHeight(isSearchSettingToggled ? 100 : 0),
+          preferredSize: Size.fromHeight(isSearchSettingToggled ? 60 : 0),
         ),
       ),
       body: _buildImageGallery(context),
@@ -159,20 +159,35 @@ final _upvoteTextController = TextEditingController(text: '100');
 String currentSortField = '';
 
 Widget _searchSettings(BuildContext context) {
-  return Container(
-    alignment: Alignment.center,
-    child: Row(
-      children: [
-        Expanded(
-            child: TextField(
-          controller: _upvoteTextController,
-        )),
-        Icon(
-          Icons.arrow_upward_outlined,
-          color: Colors.green,
-        ),
-        DropdownSortButton()
-      ],
+  return Expanded(
+    child: Container(
+      alignment: Alignment.center,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 40.0,
+          ),
+          Expanded(
+              child: TextField(
+            textAlign: TextAlign.center,
+            controller: _upvoteTextController,
+          )),
+          SizedBox(
+            width: 10.0,
+          ),
+          Icon(
+            Icons.arrow_upward_outlined,
+            color: Colors.green,
+          ),
+          SizedBox(
+            width: 70.0,
+          ),
+          DropdownSortButton(),
+          SizedBox(
+            width: 40.0,
+          ),
+        ],
+      ),
     ),
   );
 }

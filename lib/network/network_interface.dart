@@ -40,8 +40,10 @@ class DerpibooruService implements NetworkInterface {
       int page = 1,
       String size = 'small'}) async {
     List<Picture> listOfImages = [];
+
+    String formatedSortField = _formatSortField(sortField);
     var searchedTagsData =
-        await getSearchedTagsData(tags: tags, page: page, upvotes: upvotes);
+        await getSearchedTagsData(page: page, tags: tags, upvotes: upvotes, sortField: formatedSortField);
 
     for (int i = 0; i < searchedTagsData.images.length; i++) {
       ApiPicture apiPic = searchedTagsData.images[i];
@@ -56,6 +58,29 @@ class DerpibooruService implements NetworkInterface {
       listOfImages.add(picture);
     }
     return listOfImages;
+  }
+
+  String _formatSortField(String unformatedField) {
+    String formatedField;
+
+    switch(unformatedField) {
+      case 'by Relevance': {
+        formatedField = 'first_seen_at';
+      }
+      break;
+
+      case 'by Upvotes': {
+        formatedField = 'upvotes';
+      }
+      break;
+
+      default: {
+        formatedField = 'upvotes';
+      }
+      break;
+    }
+
+    return formatedField;
   }
 
   //TODO Ask Витя if I should return json instead of Map, because I don't see any difference and if it should return json in general
