@@ -12,15 +12,15 @@ class MainGallery extends StatefulWidget {
 
 class _MainGalleryState extends State<MainGallery> {
   final derpiService = NetworkInterface();
-  final ScrollController _scrollController = ScrollController();
-  final TextEditingController _searchTextController =
-      TextEditingController(text: '');
+  final _scrollController = ScrollController();
+  final _searchTextController = TextEditingController(text: '');
 
   int currentPage = 1;
   int currentCount = 0;
   bool loading = false;
   List<Picture> currentDisplayImages = [];
   String currentSearchText = 'fluttershy,safe,solo,-animated';
+  bool isSearchSettingToggled = false;
 
   @override
   void initState() {
@@ -66,18 +66,34 @@ class _MainGalleryState extends State<MainGallery> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  isSearchSettingToggled = !isSearchSettingToggled;
+                });
+              },
+              icon: Icon(Icons.manage_search))
+        ],
+        bottom: PreferredSize(
+          child:
+              isSearchSettingToggled ? _searchSettings(context) : Container(),
+          preferredSize: Size.fromHeight(isSearchSettingToggled ? 100 : 0),
+        ),
       ),
       body: _buildImageGallery(context),
     );
   }
-
 
   Widget _buildImageGallery(BuildContext context) {
     //TODO Think about creating stream to add pictures to list
     return FutureBuilder<List<Picture>>(
       // ignore: argument_type_not_assignable
       future: derpiService.getListOfPictures(
-          tags: currentSearchText, page: currentPage),
+          tags: currentSearchText,
+          page: currentPage,
+          upvotes: _upvoteTextController.text,
+          sortField: currentSortField),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasError) {
@@ -132,6 +148,57 @@ class _MainGalleryState extends State<MainGallery> {
               builder: (context) =>
                   pictureInfo(context, currentDisplayImages[index])),
         );
+      },
+    );
+  }
+}
+
+//TODO ASAP Refactor this
+List<String> sortFields = ['by Relevance', 'by Upvotes'];
+final _upvoteTextController = TextEditingController(text: '100');
+String currentSortField = '';
+
+Widget _searchSettings(BuildContext context) {
+  return Container(
+    alignment: Alignment.center,
+    child: Row(
+      children: [
+        Expanded(
+            child: TextField(
+          controller: _upvoteTextController,
+        )),
+        Icon(
+          Icons.arrow_upward_outlined,
+          color: Colors.green,
+        ),
+        DropdownSortButton()
+      ],
+    ),
+  );
+}
+
+class DropdownSortButton extends StatefulWidget {
+  const DropdownSortButton({Key? key}) : super(key: key);
+
+  @override
+  State<DropdownSortButton> createState() => _DropdownSortButtonState();
+}
+
+class _DropdownSortButtonState extends State<DropdownSortButton> {
+  String dropDownButtonValue = sortFields.first;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButton<String>(
+      value: dropDownButtonValue,
+      items: sortFields.map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(value: value, child: Text(value));
+      }).toList(),
+      onChanged: (String? value) {
+        setState(() {
+          dropDownButtonValue = value!;
+          currentSortField = dropDownButtonValue;
+        });
       },
     );
   }

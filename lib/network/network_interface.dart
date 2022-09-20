@@ -7,7 +7,11 @@ abstract class NetworkInterface {
   factory NetworkInterface() => DerpibooruService();
 
   Future<List<Picture>> getListOfPictures(
-      {String tags = '', int page = 1}) async {
+      {String tags = '',
+      int page = 1,
+      String sortDirection = '',
+      String sortField = '',
+      String upvotes = ''}) async {
     return <Picture>[];
   }
 }
@@ -30,12 +34,14 @@ class DerpibooruService implements NetworkInterface {
   @override
   Future<List<Picture>> getListOfPictures(
       {String tags = 'fluttershy,safe,solo',
+      upvotes = '100',
       String sortDirection = 'desc',
       String sortField = 'score',
       int page = 1,
       String size = 'small'}) async {
     List<Picture> listOfImages = [];
-    var searchedTagsData = await getSearchedTagsData(tags: tags, page: page);
+    var searchedTagsData =
+        await getSearchedTagsData(tags: tags, page: page, upvotes: upvotes);
 
     for (int i = 0; i < searchedTagsData.images.length; i++) {
       ApiPicture apiPic = searchedTagsData.images[i];
@@ -55,12 +61,13 @@ class DerpibooruService implements NetworkInterface {
   //TODO Ask Витя if I should return json instead of Map, because I don't see any difference and if it should return json in general
   Future<ApiPicturesData> getSearchedTagsData(
       {tags = 'fluttershy,safe,solo,-animated',
-      String sortDirection = 'desc',
-      String sortField = 'score',
-      int page = 1}) async {
+      upvotes = '100',
+      sortDirection = 'desc',
+      sortField = 'score',
+      page = 1}) async {
     //TODO Add WebM support
     var url =
-        'https://derpibooru.org//api/v1/json/search/images?q=$tags$additionalFilterTags$notSupportedTags&sd=$sortDirection&sf=$sortField&filter_id=$filterDefaultSafe&page=$page&per_page=$picsPerPage';
+        'https://derpibooru.org//api/v1/json/search/images?q=$tags,upvotes.gte:$upvotes$additionalFilterTags$notSupportedTags&sd=$sortDirection&sf=$sortField&filter_id=$filterDefaultSafe&page=$page&per_page=$picsPerPage';
 
     var parsedUri = Uri.parse(url);
     final response = await http.get(parsedUri);
